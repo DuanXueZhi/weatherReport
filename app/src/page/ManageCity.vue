@@ -13,33 +13,22 @@
     </div>
     <header class="header">
       <input class="headerInput" type="text" v-model="inputCityName" @keyup="getCityName(inputCityName)" placeholder="输入城市名或拼音">
-      <button class="headerBtn" @click="getCityName(inputCityName)">确定</button>
+      <button class="headerBtn" @touchstart="getCityName(inputCityName)">确定</button>
     </header>
-    <div class="body" v-if="inputCityName === ''">
-      <ul>
-        <li style="border-bottom: 1px solid black;">
-          <div>
-            <span>海淀</span>
-          </div>
-          <div>
-            <span>14℃</span>
-            <span>太阳</span>
-          </div>
-        </li>
-        <li style="border-bottom: 1px solid black;">
-          <div>
-            <span>海淀</span>
-          </div>
-          <div>
-            <span>14℃</span>
-            <span>太阳</span>
-          </div>
-        </li>
-      </ul>
-    </div>
+    <ul class="body" v-if="inputCityName === ''">
+      <li class="cityList">
+        <div class="cityListLeft">
+          <span>{{$store.state.nowCityMsg.name}}</span>
+        </div>
+        <div class="cityListRight">
+          <span>14℃</span>
+          <span>太阳</span>
+        </div>
+      </li>
+    </ul>
     <div class="searchingCity" v-if="inputCityName !== ''">
       <ul class="searchingCityBox">
-        <li class="eachCityMsg" v-for="(cityMsg, index) in receiveCityMsg" :key="index" @click="chooseCity(cityMsg.cityZh)">
+        <li class="eachCityMsg" v-for="(cityMsg, index) in receiveCityMsg" :key="index" @touchstart="chooseCity(cityMsg.cityZh)">
           <p class="cityName">{{cityMsg.cityZh}}</p>
           <p class="cityMsg"><span>{{cityMsg.cityZh}}</span>《<span>{{cityMsg.leaderZh}}</span>《<span>{{cityMsg.provinceZh}}</span></p>
         </li>
@@ -52,7 +41,7 @@
     <footer class="footer">
       <h3 class="footerHead">热门城市</h3>
       <div class="cityTitle" v-for="(city, index) in cityRecommend" :key="index">
-        <span class="titleText">{{city}}</span>
+        <span class="titleText" @touchstart="chooseCity(city)">{{city}}</span>
       </div>
     </footer>
   </div>
@@ -113,7 +102,7 @@ export default {
     // 请求本地city数据
     getCityName (inputCityName) {
       var vm = this
-      this.$axios.get('http://localhost:8080/static/json/city.json').then(res => {
+      this.$axios.get('https://liufeiyu.cn/static/json/city.json').then(res => {
         console.log(res)
         vm.receiveCityMsg = [] // 清空城市数组
         res.data.forEach(city => {
@@ -178,6 +167,17 @@ export default {
     }
     .body{
       padding: 1em 1.5em;
+      .cityList{
+        font-size: 1.2em;
+        border-bottom: 1px solid grey;
+        padding: 12px 0 10px;
+        .cityListLeft{
+          display: inline-block;
+        }
+        .cityListRight{
+          float: right;
+        }
+      }
     }
     .searchingCity{
       padding: 1em 1.5em;
