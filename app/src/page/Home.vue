@@ -1,18 +1,28 @@
 <!-- 2019/3/30 -->
 <template>
-  <div id="Home" @touchmove="nextAndPreviousCity">
+  <div id="Home"
+       @touchstart="startSwitchOverCity"
+       @touchmove="nextOrPreviousCity"
+       @touchend="executeSwitchOverCity"
+       v-bind:style="{backgroundImage: 'url(' + require('../assets/image/weatherBackgroundImg/' + bgImage + '.jpg') + ')'}">
     <p class="AppAllExplain">{{msg}}</p>
     <header class="header">
-      <div class="headerLeft" @touchstart="addCity()">
+      <div class="headerLeft" @touchend="addCity">
         <span class="addCityTitle">+</span>
         <span class="cityName">{{cityName? cityName : $store.state.nowCityMsg.name}}</span>
         <span class="locationTitle" v-if="$store.state.nowCityMsg.name.indexOf(cityName) !== -1"><i class="iconfont icon-dingwei"></i></span>
       </div>
       <div class="headerRight">
-        <span class="share"><i class="iconfont icon-fenxiang"></i></span>
+        <span class="share"><i class="iconfont icon-fenxiang"></i></span> <!-- icon-lingdang -->
       </div>
     </header>
     <div class="body">
+      <mu-flex class="demo-linear-progress bodyUp">
+        <mu-linear-progress :value="myCity.indexOf(cityName) + 1" mode="determinate" color="white" :min="0" :max="myCity.length"></mu-linear-progress>
+      </mu-flex>
+      <div class="bodyTop"> <!-- 控制有无 v-if -->
+        <span>左右滑动可更换用户先前使用过的城市</span>
+      </div>
       <div class="bodyHead">
         <div class="headLeft">
           <span class="temperature" v-if="cityWeather.data[0].tem">{{cityWeather.data[0].tem.substring(0, cityWeather.data[0].tem.length -1)}}°</span>
@@ -21,7 +31,11 @@
         </div>
         <div class="headRight">
           <div class="rightBox">
-            <span class="rightTitle" :class="{'greenTitle': cityWeather.data[0].air_level === '优', 'yellowTitle': cityWeather.data[0].air_level === '良', 'redTitle': cityWeather.data[0].air_level === '差'}"></span>
+            <span class="rightTitle"
+                  :class="{
+                  'greenTitle': cityWeather.data[0].air_level === '优',
+                  'yellowTitle': (cityWeather.data[0].air_level === '良' || cityWeather.data[0].air_level === '轻度'),
+                  'redTitle': (cityWeather.data[0].air_level === '差' || cityWeather.data[0].air_level === '严重' || cityWeather.data[0].air_level === '中度')}"></span>
             <span class="airStatus">{{cityWeather.data[0].air_level}}</span>
             <span class="airScore">{{cityWeather.data[0].air}}</span>
           </div>
@@ -94,7 +108,7 @@ export default {
     return {
       msg: '主页页面', /* 该文件的解释 */
       // ----------------------------------系统数据----------------------------------
-      cityWeather: { /* 城市天气 */
+      cityWeather: { // 城市天气
         data: [ /* 七天天气数据 */
           {
             air: 0,
@@ -128,11 +142,23 @@ export default {
           }
         ]
       },
+      userMsg: {
+        userName: '',
+        myCity: []
+      },
       // --------------------------------本页操作数据--------------------------------
       showMoreWeatherMsg: false, /* 是否展示较详细的天气信息 */
       nowCity: '', /* 当前定位城市 */
       cityName: '', /* 选择城市名 */
-      touchInfo: {} /* 页面滑动信息 */
+      touchInfo: { /* 滑动信息 */
+        initial: false, // 是否初始化
+        startX: 0, // 初始X
+        startY: 0 // 初始Y
+        // moveDistanceX: 0 // 移动距离X
+      },
+      myCity: [], // 用户储存城市
+      bgImage: 'sunshineDaytime', // 背景图（天气）
+      linear: 1
     }
   },
   // 计算属性
@@ -164,10 +190,10 @@ export default {
   watch: {},
   /* vue完整生命周期 */
   beforeCreate () {
-    console.group('beforeCreate 创建前状态===============》')
+    // console.group('beforeCreate 创建前状态===============》')
   },
   created () {
-    console.group('created 创建完毕状态===============》')
+    // console.group('created 创建完毕状态===============》')
     // 获取当前经纬度坐标（浏览器自带功能） ------------------------------------------- 好像因为Google Chrome被墙了
     // this.getPositionBrowser().then(result => {
     //   // 返回结果示例：
@@ -184,46 +210,71 @@ export default {
     // }).catch(err => {
     //   console.log('获取错误', err)
     // })
-
-    if (this.$route.query.city) {
-      this.cityName = this.$route.query.city
-      var cityMsg = {
-        version: 'v1', // 必填（版本）
-        cityid: '', // 城市ID（选填）
-        city: this.$route.query.city, // 城市名称（选填）
-        ip: '', // 使用者IP（选填）
-        callback: '' // jsonp参数（选填）
-      }
-      this.sendWeatherRequest(cityMsg).then(res => {
-        if (res.status === 200) {
-          this.cityWeather = res.data
-          console.log(this.cityWeather)
-        }
-      })
-    } else {
-      this.getCurrentCity() // 获取当前位置信息，并获取该位置天气
-    }
+    this.userMsg = this.$store.state.userMsg
+    this.myCity = this.userMsg.myCity
+    this.mainIndex(this.$store.state.nowShowCityMsg.name)
   },
   beforeMount () {
-    console.group('beforeMount 挂载前状态===============》')
+    // console.group('beforeMount 挂载前状态===============》')
   },
   mounted () {
-    console.group('mounted 挂载结束状态===============》')
+    // console.group('mounted 挂载结束状态===============》')
   },
   beforeUpdate () {
-    console.group('beforeUpdate 更新前状态===============》')
+    // console.group('beforeUpdate 更新前状态===============》')
   },
   updated () {
-    console.group('updated 更新完成状态===============》')
+    // console.group('updated 更新完成状态===============》')
   },
   beforeDestroy () {
-    console.group('beforeDestroy 销毁前状态===============》')
+    // console.group('beforeDestroy 销毁前状态===============》')
   },
   destroyed () {
-    console.group('destroyed 销毁完成状态===============》')
+    // console.group('destroyed 销毁完成状态===============》')
   },
   // 函数集
   methods: {
+    /*
+    * 入口函数
+    * */
+    mainIndex (cityName) {
+      console.log(cityName)
+      if (cityName) {
+        this.cityName = cityName
+        cityName = this.cutCityText(cityName)// 剔除‘市’
+        if (this.myCity.indexOf(cityName) === -1) { // 不存在myCity中
+          this.myCity.push(cityName) // 将当前城市存入myCity中
+          // 更新数据库中该字段
+          this.updateUserMsg(this.userMsg._id, {myCity: this.myCity})
+        }
+        this.linear = this.myCity.indexOf(cityName) + 1 // 更新进度条显示
+        var cityMsg = {
+          version: 'v1', // 必填（版本）
+          cityid: '', // 城市ID（选填）
+          city: cityName, // 城市名称（选填）
+          ip: '', // 使用者IP（选填）
+          callback: '' // jsonp参数（选填）
+        }
+        this.sendWeatherRequest(cityMsg).then(res => {
+          if (res.status === 200) {
+            this.cityWeather = res.data
+            console.log(this.cityWeather)
+            switch (res.data.data[0].wea) {
+              case '晴':
+                this.bgImage = 'sunshineDaytime'
+                break
+              case '多云':
+              case '多云转晴':
+                this.bgImage = 'cloudyDaytime'
+                break
+              default: this.bgImage = 'overcastDaytime'
+            }
+          }
+        })
+      } else { // 没有输入城市
+        this.getCurrentCity() // 获取当前位置信息，并获取该位置天气
+      }
+    },
     // ----------------------------------公用函数----------------------------------
     /*
      * 获取（数据库数据）函数
@@ -260,9 +311,12 @@ export default {
     getCurrentCity () {
       var vm = this
       this.$getCurrentLocation.getCurrentLocationMsg().then((locationMsg) => {
-        // locationMsg 存入vuex中（更新当前位置）
-        console.log(locationMsg)
-        this.$store.commit('updateNowCityMsg', locationMsg)
+        vm.$store.commit('updateNowCityMsg', locationMsg) // locationMsg 存入vuex中（更新当前位置）
+        locationMsg.name = this.cutCityText(locationMsg.name) // 剔除‘市’
+        if (vm.myCity.indexOf(locationMsg.name) === -1) { // 不存在于myCity中
+          vm.myCity.push(locationMsg.name) // 当前定位储存到用户城市名数组中
+          this.updateUserMsg(vm.userMsg._id, {myCity: vm.myCity})
+        }
         var currentLocation = {
           version: 'v1', // 必填（版本）
           cityid: '', // 城市ID（选填）
@@ -281,9 +335,7 @@ export default {
 
     // 发送天气API
     sendWeatherRequest (parameter) {
-      if (parameter.city.indexOf('市') > -1) { // 剔除‘市’
-        parameter.city = parameter.city.substring(0, parameter.city.length - 1)
-      }
+      parameter.city = this.cutCityText(parameter.city) // 剔除‘市’
       var vm = this
       return vm.$axios.get('https://www.tianqiapi.com/api/?' +
         'version=' + parameter.version +
@@ -293,91 +345,83 @@ export default {
         '&callback=' + parameter.callback
       )
     },
+
+    // 修改用户信息
+    updateUserMsg (id, userData) {
+      console.log('修改用户信息', id, userData)
+      this.$sendRequest.RTSPost('/rm_users/user_update', {id: id, user: userData}).then(res => {
+        console.log(res)
+      })
+    },
+
+    // 去除‘市’
+    cutCityText (cityName) {
+      if (cityName.indexOf('市') > -1) {
+        cityName = cityName.substring(0, cityName.length - 1)
+      }
+      return cityName
+    },
     // ----------------------------------本页函数----------------------------------
     // 添加城市
-    addCity () {
+    addCity (event) {
+      event.preventDefault()
       this.$router.push('/ManageCity')
     },
 
-    // 左右滑动更改固定城市
-    nextAndPreviousCity () {
-      console.log('滑动修改城市')
+    // 开始滑动（准备切换城市）
+    startSwitchOverCity (e) {
+      // console.log('开始切换城市')
+      // 记录初始位置
+      this.touchInfo.startX = e.touches[0].pageX
+      this.touchInfo.startY = e.touches[0].pageY
+    },
 
-    },
-    middleTouchStart(e) {
-      // touch开始时,将touchInfo对象设置为已初始化状态
-      this.touchInfo.initiated = true
-      // 用来判断是否是一次移动
-      this.touchInfo.moved = false
-      const touch = e.touches[0]
-      // 记录touch位置的横坐标与纵坐标
-      this.touchInfo.startX = touch.pageX
-      this.touchInfo.startY = touch.pageY
-    },
-    middleTouchMove(e) {
-      if (!this.touchInfo.initiated) {
-        return
-      }
-      const touch = e.touches[0]
-      // 横坐标与纵坐标的偏移
-      const deltaX = touch.pageX - this.touchInfo.startX
-      const deltaY = touch.pageY - this.touchInfo.startY
-      if (Math.abs(deltaY) > Math.abs(deltaX)) { // 纵向滑动
-        return
-      }
-      if (!this.touchInfo.moved) {
-        this.touchInfo.moved = true
-      }
-      // 判断当前显示的是cd还是歌词,如果是cd,则当前左偏移值为0,否则偏移值为-window.innerWidth
-      const left = this.currentShow === 'cd' ? 0 : -window.innerWidth
-      // 求偏移值
-      const offsetWidth = Math.min(0, Math.max(-window.innerWidth, left + deltaX))
-      // 求偏移值占可视区域的百分比,用于判断是否应该切换显示状态
-      this.touchInfo.percent = Math.abs(offsetWidth / window.innerWidth)
-      // 移动时歌词模块的偏移效果
-      this.$refs.lyricList.$el.style.transform = `translate3d(${offsetWidth}px,0,0)`
-      this.$refs.lyricList.$el.style.transitionDuration = 0
-      // 移动时CD模块的淡出效果
-      this.$refs.cd.style.opacity = 1 - this.touchInfo.percent
-      this.$refs.cd.style.transitionDuration = 0
-    },
-    middleTouchEnd() {
-      if (!this.touchInfo.moved) {
-        return
-      }
-      let offsetWidth
-      let opacity
-      if (this.currentShow === 'cd') {
-        // 移动百分比大于屏幕一半,则切换显示状态
-        if (this.touchInfo.percent > 0.5) {
-          offsetWidth = -window.innerWidth
-          opacity = 0
-          this.currentShow = 'lyric'
+    // 左右滑动更改固定城市（滑动中）
+    nextOrPreviousCity (e) {
+      this.touchInfo.initial = true // 初始化移动数据
+      if (this.touchInfo.initial) {
+        var moveDistanceX = e.touches[0].pageX - this.touchInfo.startX
+        var moveDistanceY = e.touches[0].pageY - this.touchInfo.startY
+        if (Math.abs(moveDistanceX) > Math.abs(moveDistanceY)) {
+          // 横向移动
+          this.touchInfo.moveDistanceX = moveDistanceX // 更新外部移动距离X
         } else {
-          offsetWidth = 0
-          opacity = 1
-        }
-      } else {
-        if (this.touchInfo.percent < 0.5) {
-          offsetWidth = 0
-          this.currentShow = 'cd'
-          opacity = 1
-        } else {
-          offsetWidth = -window.innerWidth
-          opacity = 0
+          // 纵向移动
+          if (this.touchInfo.initial) {
+            this.touchInfo.initial = false
+          }
         }
       }
-      // 最终状态的设置
-      // 动画时间
-      const time = 300
-      // touch完毕后歌词模块应该放置的位置
-      this.$refs.lyricList.$el.style.transform = `translate3d(${offsetWidth}px,0,0)`
-      this.$refs.lyricList.$el.style.transitionDuration = `${time}ms`
-      // touch完毕后CD模块的透明度
-      this.$refs.cd.style.opacity = opacity
-      this.$refs.cd.style.transitionDuration = `${time}ms`
-      // 一次touch完成后,重置touchInfo对象尚未初始化状态
-      this.touchInfo.initiated = false
+    },
+
+    // 执行切换城市操作
+    executeSwitchOverCity () {
+      var vm = this
+      if (this.touchInfo.initial) {
+        var direction = this.touchInfo.moveDistanceX
+        var nowCityName = this.cityName ? this.cityName : this.$store.state.nowCityMsg.name
+        nowCityName = this.cutCityText(nowCityName) // 剔除‘市’
+        document.documentElement.scrollTop = 0 // 切换城市前先返回定
+        if (direction > 0) {
+          // console.log('向右滑动，展示左侧')
+          if (this.myCity.indexOf(nowCityName) === 0) {
+            this.$toast.message('左侧没了！')
+          } else {
+            vm.$store.commit('updateNowShowCityMsgName', vm.myCity[vm.myCity.indexOf(nowCityName) - 1]) // vuex中更新当前展示城市
+            vm.mainIndex(vm.myCity[vm.myCity.indexOf(nowCityName) - 1])
+          }
+        } else if (direction < 0) {
+          // console.log('向左滑动，展示右侧')
+          if (this.myCity.indexOf(nowCityName) === this.myCity.length - 1) {
+            this.$toast.message('右侧没了！')
+          } else {
+            vm.$store.commit('updateNowShowCityMsgName', vm.myCity[vm.myCity.indexOf(nowCityName) + 1]) // vuex中更新当前展示城市
+            console.log('数字', vm.myCity.indexOf(nowCityName), vm.linear)
+            vm.mainIndex(vm.myCity[vm.myCity.indexOf(nowCityName) + 1])
+          }
+        }
+        delete this.touchInfo.moveDistanceX
+      }
     }
   }
 }
@@ -389,9 +433,7 @@ export default {
   #Home{
     padding: 12px 14px;
     font-size: 16px;
-    background: url("../assets/image/backgroundImg/sunshineDaytime.jpg") no-repeat;
     .background-size(100%);
-    position: relative;
     color: #fff;
     .header{
       border-bottom: 1px solid #f3f4e9;
@@ -416,20 +458,34 @@ export default {
       }
     }
     .body{
-      padding-top: 3em;
+      position: relative;
+      .bodyUp{
+        width: 20%;
+        position: absolute;
+        top: -0.75em;
+      }
+      .bodyTop{
+        padding: 0.75em 10%;
+        >span{
+          display: inline-block;
+          border-top: 1px solid wheat;
+          border-bottom: 1px solid wheat;
+        }
+      }
       .bodyHead{
+        position: relative;
         .headLeft{
           .temperature{
             font-size: 6em;
           }
           .weatherStatus{
-            font-size: 1.5em;
+            font-size: 1.3em;
           }
         }
         .headRight{
           position: absolute;
-          right: 0;
-          top: 7.7em;
+          right: -0.875em;
+          top: 0.7em;
           .rightBox{
             padding: 4px 8px;
             margin-bottom: 6px;
@@ -454,7 +510,7 @@ export default {
               background: #009bff;
             }
             .yellowWarning{
-              background: greenyellow;
+              background: #fff42f;
             }
             .orangeWarning{
               background: darkorange;

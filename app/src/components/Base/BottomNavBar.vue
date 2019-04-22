@@ -9,8 +9,8 @@
           <span class="itemText">主页</span>
         </router-link>
       </li>
-      <li class="eachItem">
-        <router-link class="itemBox" :to="{name: 'User'}">
+      <li class="eachItem" @touchstart="navBarItem = 'NextWeek'">
+        <router-link class="itemBox" :to="{name: 'NextWeek'}" v-bind:class="{'active': navBarItem === 'NextWeek'}">
           <span class="itemIconfont"><i class="iconfont icon-icon-test"></i></span>
           <span class="itemText">七天</span>
         </router-link>
@@ -54,30 +54,30 @@ export default {
   },
   /* vue完整生命周期 */
   beforeCreate () {
-    console.group('beforeCreate 创建前状态===============》')
+    // console.group('beforeCreate 创建前状态===============》')
   },
   created () {
-    console.group('created 创建完毕状态===============》')
+    // console.group('created 创建完毕状态===============》')
     var vm = this
     vm.navBarItem = vm.$route.name // 通过路由更新活跃图标（也就是刷新不变激活图标）
   },
   beforeMount () {
-    console.group('beforeMount 挂载前状态===============》')
+    // console.group('beforeMount 挂载前状态===============》')
   },
   mounted () {
-    console.group('mounted 挂载结束状态===============》')
+    // console.group('mounted 挂载结束状态===============》')
   },
   beforeUpdate () {
-    console.group('beforeUpdate 更新前状态===============》')
+    // console.group('beforeUpdate 更新前状态===============》')
   },
   updated () {
-    console.group('updated 更新完成状态===============》')
+    // console.group('updated 更新完成状态===============》')
   },
   beforeDestroy () {
-    console.group('beforeDestroy 销毁前状态===============》')
+    // console.group('beforeDestroy 销毁前状态===============》')
   },
   destroyed () {
-    console.group('destroyed 销毁完成状态===============》')
+    // console.group('destroyed 销毁完成状态===============》')
   },
   // 函数集
   methods: {

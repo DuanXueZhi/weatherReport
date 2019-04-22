@@ -3,17 +3,18 @@
   <div id="ManageCity">
     <p class="AppAllExplain">{{msg}}</p>
     <div class="top">
-      <router-link to="/Native/Home" class="topLeft">
+      <a href="javascript:history.go(-1)" class="topLeft">
         <span class="leftTitle"><i class="iconfont icon-arrow-left"></i></span>
         <span class="leftText">天气助手</span>
-      </router-link>
+      </a>
       <div class="topRight">
         <span class="rightBox"><i class="iconfont icon-bianji"></i></span>
       </div>
     </div>
     <header class="header">
       <input class="headerInput" type="text" v-model="inputCityName" @keyup="getCityName(inputCityName)" placeholder="输入城市名或拼音">
-      <button class="headerBtn" @touchstart="getCityName(inputCityName)">确定</button>
+      <!--<button class="headerBtn" @touchstart="getCityName(inputCityName)">确定</button>-->
+      <!--<mu-button color="primary" class="headerBtn" @touchstart="getCityName(inputCityName)">确定</mu-button>-->
     </header>
     <ul class="body" v-if="inputCityName === ''">
       <li class="cityList">
@@ -41,7 +42,7 @@
     <footer class="footer">
       <h3 class="footerHead">热门城市</h3>
       <div class="cityTitle" v-for="(city, index) in cityRecommend" :key="index">
-        <span class="titleText" @touchstart="chooseCity(city)">{{city}}</span>
+        <span class="titleText" @touchend="chooseCity(city)">{{city}}</span>
       </div>
     </footer>
   </div>
@@ -70,28 +71,28 @@ export default {
   watch: {},
   /* vue完整生命周期 */
   beforeCreate () {
-    console.group('beforeCreate 创建前状态===============》')
+    // console.group('beforeCreate 创建前状态===============》')
   },
   created () {
-    console.group('created 创建完毕状态===============》')
+    // console.group('created 创建完毕状态===============》')
   },
   beforeMount () {
-    console.group('beforeMount 挂载前状态===============》')
+    // console.group('beforeMount 挂载前状态===============》')
   },
   mounted () {
-    console.group('mounted 挂载结束状态===============》')
+    // console.group('mounted 挂载结束状态===============》')
   },
   beforeUpdate () {
-    console.group('beforeUpdate 更新前状态===============》')
+    // console.group('beforeUpdate 更新前状态===============》')
   },
   updated () {
-    console.group('updated 更新完成状态===============》')
+    // console.group('updated 更新完成状态===============》')
   },
   beforeDestroy () {
-    console.group('beforeDestroy 销毁前状态===============》')
+    // console.group('beforeDestroy 销毁前状态===============》')
   },
   destroyed () {
-    console.group('destroyed 销毁完成状态===============》')
+    // console.group('destroyed 销毁完成状态===============》')
   },
   // 函数集
   methods: {
@@ -102,7 +103,8 @@ export default {
     // 请求本地city数据
     getCityName (inputCityName) {
       var vm = this
-      this.$axios.get('https://liufeiyu.cn/static/json/city.json').then(res => {
+      // http://dxz.liufeiyu.cn/weatherReport/dist/static/json/city.json
+      this.$axios.get('http://dxz.liufeiyu.cn/weatherReport/dist/static/json/city.json').then(res => {
         console.log(res)
         vm.receiveCityMsg = [] // 清空城市数组
         res.data.forEach(city => {
@@ -117,7 +119,8 @@ export default {
     * */
     // 选好城市跳转页面
     chooseCity (cityName) {
-      this.$router.push({path: '/Native/Home', query: {city: cityName}})
+      this.$store.commit('updateNowShowCityMsgName', cityName) // vuex中更新当前展示城市
+      window.history.go(-1) // 返回前一个页面
     }
     // ----------------------------------本页数据----------------------------------
   }
