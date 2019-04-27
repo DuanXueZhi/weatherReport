@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-
 /*
 * Native(本土页面)
 * */
@@ -13,6 +12,10 @@ import Home from '@/page/Home'
 * NextWeek(近七日预报)
 * */
 import NextWeek from '@/page/NextWeek'
+/*
+* Trip(出行推荐)
+* */
+import Trip from '@/page/Trip'
 /*
 * User(用户)
 * */
@@ -36,7 +39,7 @@ import Register from '@/page/Register'
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   // mode: 'history', // 去除#
   routes: [
     {
@@ -60,6 +63,12 @@ export default new Router({
           path: 'NextWeek',
           name: 'NextWeek',
           component: NextWeek
+        },
+        // Trip(出行推荐)
+        {
+          path: 'Trip',
+          name: 'Trip',
+          component: Trip
         },
         // User(用户)
         {
@@ -89,3 +98,15 @@ export default new Router({
     }
   ]
 })
+
+// router.beforeEach((to, from, next) => {
+//   console.log(to, from, next)
+//   if (store.state.userMsg.userName === '') {
+//     console.log('用户未登录')
+//   } else {
+//     console.log('用户已登录')
+//     next()
+//   }
+// })
+
+export default router

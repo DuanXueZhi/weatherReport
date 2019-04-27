@@ -15,8 +15,8 @@
           <span class="itemText">七天</span>
         </router-link>
       </li>
-      <li class="eachItem">
-        <router-link class="itemBox" :to="{name: 'User'}">
+      <li class="eachItem" @touchstart="navBarItem = 'Trip'">
+        <router-link class="itemBox"  :to="{name: 'Trip'}" v-bind:class="{'active': navBarItem === 'Trip'}">
           <span class="itemIconfont"><i class="iconfont icon-jiaotongchuhang"></i></span>
           <span class="itemText">出行</span>
         </router-link>

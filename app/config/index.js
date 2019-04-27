@@ -9,8 +9,27 @@ module.exports = {
 
     // Paths
     assetsSubDirectory: 'static',
-    assetsPublicPath: '/',
-    proxyTable: {},
+    assetsPublicPath: './',
+    proxyTable: { // 请求代理
+      // '/api': {
+      //   target: 'http://localhost:3000', // 源地址
+      //   changeOrigin: true, // 改变源
+      //   pathRewrite: {
+      //     '^/api': '' // 路径重写
+      //   }
+      // },
+      // '/api1': {
+      //   target: 'http://localhost:3001', // 源地址
+      //   changeOrigin: true, // 改变源
+      //   pathRewrite: {
+      //     '^/api1': '' // 路径重写
+      //   }
+      // },
+      // '*': {
+      //   target: 'http://localhost:3000', // 源地址
+      //   changeOrigin: true, // 改变源
+      // }
+    },
 
     // Various Dev Server settings
     host: 'localhost', // can be overwritten by process.env.HOST
@@ -50,7 +69,7 @@ module.exports = {
     // Paths
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
-    assetsPublicPath: '/',
+    assetsPublicPath: './',
 
     /**
      * Source Maps

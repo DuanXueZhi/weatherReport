@@ -65,7 +65,10 @@
           <mu-list>
             <mu-list-item button :ripple="false" v-for="(user, index) in userList" :key="index"  v-if="userList.length !== 0">
               <mu-list-item-title>{{user.userName}}</mu-list-item-title>
-              <mu-list-item-action v-if="user.identity !== 'admin'">
+              <mu-list-item-action class="operateUser" v-if="user.identity !== 'admin'">
+                <mu-icon value="refresh" @click="updateUserMsg(user._id, {password: '000000'})"></mu-icon>
+              </mu-list-item-action>
+              <mu-list-item-action class="operateUser" v-if="user.identity !== 'admin'">
                 <mu-icon value="clear" @click="deleteUser(user._id)"></mu-icon>
               </mu-list-item-action>
             </mu-list-item>
@@ -112,8 +115,9 @@ export default {
     if (this.$store.state.userMsg.userName === '') {
       // 用户未登录
       this.$router.push('/Native/UserLogin') // 去用户信息页面
+    } else {
+      this.getUserMsg(this.$store.state.userMsg)
     }
-    this.getUserMsg(this.$store.state.userMsg)
   },
   beforeMount () {
     // console.group('beforeMount 挂载前状态===============》')
@@ -169,7 +173,7 @@ export default {
     updateUserMsg (id, userData) {
       console.log('修改用户信息', id, userData)
       this.$sendRequest.RTSPost('/rm_users/user_update', {id: id, user: userData}).then(res => {
-        console.log(res)
+        this.$toast.message(res.data.msg)
       })
     },
 
@@ -231,6 +235,10 @@ export default {
               }
             }
           }
+        }
+        .operateUser{
+          min-width: 0;
+          padding: 0 0.5em;
         }
       }
     }

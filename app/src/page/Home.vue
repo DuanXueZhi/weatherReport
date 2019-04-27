@@ -18,7 +18,7 @@
     </header>
     <div class="body">
       <mu-flex class="demo-linear-progress bodyUp">
-        <mu-linear-progress :value="myCity.indexOf(cityName) + 1" mode="determinate" color="white" :min="0" :max="myCity.length"></mu-linear-progress>
+        <mu-linear-progress :value="myCity.indexOf(cityName) === -1 ? myCity.indexOf(cityName) + 2 : myCity.indexOf(cityName) + 1" mode="determinate" color="white" :min="0" :max="myCity.length"></mu-linear-progress>
       </mu-flex>
       <div class="bodyTop"> <!-- 控制有无 v-if -->
         <span>左右滑动可更换用户先前使用过的城市</span>
@@ -157,8 +157,7 @@ export default {
         // moveDistanceX: 0 // 移动距离X
       },
       myCity: [], // 用户储存城市
-      bgImage: 'sunshineDaytime', // 背景图（天气）
-      linear: 1
+      bgImage: 'sunshineDaytime' // 背景图（天气）
     }
   },
   // 计算属性
@@ -247,8 +246,7 @@ export default {
           // 更新数据库中该字段
           this.updateUserMsg(this.userMsg._id, {myCity: this.myCity})
         }
-        this.linear = this.myCity.indexOf(cityName) + 1 // 更新进度条显示
-        var cityMsg = {
+        let cityMsg = {
           version: 'v1', // 必填（版本）
           cityid: '', // 城市ID（选填）
           city: cityName, // 城市名称（选填）
@@ -269,6 +267,16 @@ export default {
                 break
               default: this.bgImage = 'overcastDaytime'
             }
+            // 储存当地出行及温度信息
+            this.saveNowCityTripRecommendation(
+              res.data.city,
+              res.data.data[0].wea,
+              res.data.data[0].tem,
+              res.data.data[0].tem1,
+              res.data.data[0].tem2,
+              res.data.data[0].index,
+              res.data.data[0].date
+            )
           }
         })
       } else { // 没有输入城市
@@ -279,6 +287,24 @@ export default {
     /*
      * 获取（数据库数据）函数
      * */
+
+    // 存储函数
+    // 储存当前城市推荐出行信息
+    saveNowCityTripRecommendation (cityName, weather, tem, tem1, tem2, index, date) {
+      let recommendationData = {
+        cityName: cityName,
+        wea: weather,
+        tem: tem,
+        tem1: tem1,
+        tem2: tem2,
+        index: index,
+        date: date
+      }
+      console.log('储存当前城市推荐出行信息', recommendationData)
+      this.$sendRequest.RTSPost('/rm_cityTripRecommendation/add_recommendation', {recommendationData: recommendationData}).then(res => {
+        console.log(res)
+      })
+    },
 
     /*
      * 函数
@@ -312,6 +338,7 @@ export default {
       var vm = this
       this.$getCurrentLocation.getCurrentLocationMsg().then((locationMsg) => {
         vm.$store.commit('updateNowCityMsg', locationMsg) // locationMsg 存入vuex中（更新当前位置）
+        vm.$store.commit('updateNowShowCityMsgName', locationMsg.name) // locationMsg 存入vuex中（更新当前位置）
         locationMsg.name = this.cutCityText(locationMsg.name) // 剔除‘市’
         if (vm.myCity.indexOf(locationMsg.name) === -1) { // 不存在于myCity中
           vm.myCity.push(locationMsg.name) // 当前定位储存到用户城市名数组中
@@ -328,6 +355,16 @@ export default {
           if (res.status === 200) {
             this.cityWeather = res.data
             console.log(this.cityWeather)
+            // 储存当地出行及温度信息
+            this.saveNowCityTripRecommendation(
+              res.data.city,
+              res.data.data[0].wea,
+              res.data.data[0].tem,
+              res.data.data[0].tem1,
+              res.data.data[0].tem2,
+              res.data.data[0].index,
+              res.data.data[0].date
+            )
           }
         })
       })
@@ -416,7 +453,6 @@ export default {
             this.$toast.message('右侧没了！')
           } else {
             vm.$store.commit('updateNowShowCityMsgName', vm.myCity[vm.myCity.indexOf(nowCityName) + 1]) // vuex中更新当前展示城市
-            console.log('数字', vm.myCity.indexOf(nowCityName), vm.linear)
             vm.mainIndex(vm.myCity[vm.myCity.indexOf(nowCityName) + 1])
           }
         }

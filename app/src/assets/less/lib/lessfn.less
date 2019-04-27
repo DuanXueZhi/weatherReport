@@ -9,19 +9,19 @@
   -moz-border-radius: @arguments;
   -webkit-border-radius: @arguments;
 }
-.box_shadow(@val) {
-  box-shadow: @val;
-  -moz-box-shadow: @val;
-  -webkit-box-shadow: @val;
-  -o-box-shadow: @val;
-  -mis-box-shadow: @val;
+.box_shadow(@h-shadow, @v-shadow, @blur, @spread, @color) { // 外边框
+  box-shadow: @arguments;
+  -moz-box-shadow: @arguments;
+  -webkit-box-shadow: @arguments;
+  -o-box-shadow: @arguments;
+  -mis-box-shadow: @arguments;
 }
-.box_shadow(@val1,@val2) {
-  box-shadow: @val1,@val2;
-  -moz-box-shadow: @val1,@val2;
-  -webkit-box-shadow: @val1,@val2;
-  -o-box-shadow: @val1,@val2;
-  -mis-box-shadow: @val1,@val2;
+.box_shadow_inset(@h-shadow, @v-shadow, @blur, @spread, @color) { // 内边框
+  box-shadow: @arguments, inset;
+  -moz-box-shadow: @arguments, inset;
+  -webkit-box-shadow: @arguments, inset;
+  -o-box-shadow: @arguments, inset;
+  -mis-box-shadow: @arguments, inset;
 }
 /*左三角形*/
 .triangle-left(@borderWidth,@bgColor){
@@ -127,20 +127,6 @@
   border-radius: @arguments;
   -moz-border-radius: @arguments;
   -webkit-border-radius: @arguments;
-}
-.box_shadow(@val) {
-  box-shadow: @val;
-  -moz-box-shadow: @val;
-  -webkit-box-shadow: @val;
-  -o-box-shadow: @val;
-  -mis-box-shadow: @val;
-}
-.box_shadow(@val1,@val2) {
-  box-shadow: @val1,@val2;
-  -moz-box-shadow: @val1,@val2;
-  -webkit-box-shadow: @val1,@val2;
-  -o-box-shadow: @val1,@val2;
-  -mis-box-shadow: @val1,@val2;
 }
 // 文字阴影
 .text_shadow(@val) {

@@ -28,6 +28,7 @@
       </mu-flex>
     </div>
     <footer class="footer">
+      <mu-button color="primary" @click="userData.identity = 'admin'">guanliyuan</mu-button>
       <mu-button color="primary" @click="confirmRegister">确认</mu-button>
     </footer>
   </div>

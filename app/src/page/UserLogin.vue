@@ -96,6 +96,17 @@ export default {
       } else {
         this.$toast.message('有空值')
       }
+      // 代理转发
+      // this.$axios.post('/api/rm_users/user_login.DXZ', {data: {user: this.userData}}).then(res => {
+      //   if (res.data.code === 0) {
+      //     this.$store.commit('updateUserMsg', res.data.data) // 存入用户信息（vuex）
+      //     this.$router.push('/Native/User') // 去用户信息页面
+      //   } else {
+      //     this.$alert(res.data.msg, '登录失败', {
+      //       okLabel: '知道了'
+      //     })
+      //   }
+      // })
     }
   }
 }

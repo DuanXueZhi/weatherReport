@@ -22,8 +22,8 @@ let textCutOut = (value, num) => {
 }
 
 // 密码展示
-let textPasswordShow = () => {
-  return '******'
+let textPasswordShow = (value) => {
+  if (value) return '******'
 }
 
 export {textOmit, textCutOut, textPasswordShow}
